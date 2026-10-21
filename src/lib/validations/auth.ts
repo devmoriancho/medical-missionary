@@ -18,7 +18,7 @@ export const signupSchema = z.object({
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (e.g., !@#$%^&*).",
     }),
 
-  phone: z
+  phoneNumber: z
     .string()
     .min(1, { message: "Phone number is required for M-Pesa payments." })
     .regex(safaricomRegex, {

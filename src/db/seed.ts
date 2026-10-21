@@ -18,7 +18,6 @@ async function main() {
   console.log("🏁 Initiating database seeding process...");
 
   try {
-    // 3. Insert Categories and return their generated UUID footprints
     console.log("📦 Injecting category structures...");
     const insertedCategories = await db
       .insert(categories)
