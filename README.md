@@ -50,7 +50,13 @@ The underlying relational schema is tracked programmatically using **Drizzle ORM
 
 ---
 
-## 🛠️ Verification & Development Walkthrough
+### Version 1.1 Structural Schema Hardening Updates
+
+- **`orders`**: Added a mandatory `buyer_email` column snapshot to capture customer communications securely at checkout, while supporting the optional `user_id` relation branch for high-conversion Guest Checkout access.
+- **`payments` & `inventory_movements`**: Introduced independent transaction and movement ledgers. The payment infrastructure locks a `unique` constraint over `provider_reference` parameters to enforce automated idempotency protections against repeated external webhook retries.
+- **Atomic Operations Protection**: Database triggers and loops execute stock adjustments strictly inside `db.transaction()` pipelines, using direct SQL expressions (`stock_quantity - quantity`) to entirely eliminate concurrency double-selling bugs.
+
+## Verification & Development Walkthrough
 
 ### Local Environment Asset Configuration (`.env.local`)
 
