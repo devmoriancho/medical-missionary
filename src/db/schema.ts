@@ -85,6 +85,7 @@ export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").references(() => users.id),
   buyerName: varchar("buyer_name", { length: 255 }).notNull(),
+  buyerEmail: varchar("buyer_email", { length: 255 }).notNull(),
   buyerPhone: varchar("buyer_phone", { length: 20 }).notNull(),
   shippingAddress: text("shipping_address").notNull(),
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),

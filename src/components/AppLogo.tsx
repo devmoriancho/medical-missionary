@@ -10,7 +10,7 @@ export const AppLogo = ({ size = 40, color = "#0F766E" }: AppLogoProps) => {
       height={size}
       viewBox="0 0 100 100"
       fill="none"
-      xmlns="http://w3.org"
+      xmlns="http://www.w3.org/2000/svg"
     >
       <rect x="5" y="5" width="90" height="90" rx="24" fill={color} />
 

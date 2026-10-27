@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { products, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
+import { LeafIcon } from "@/components/icons/leaf";
+
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -23,26 +25,30 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-12">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-10 text-center md:text-left">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-            🍃 Medical Missionary Store
-          </h1>
-          <p className="mt-2 text-lg text-slate-600">
-            Pure natural remedies, cold-pressed oils, and lifestyle health
-            literature.
+        <header className="mb-10 text-center md:text-left flex flex-col items-center md:items-start gap-2">
+          <div className="flex items-center gap-3">
+            <LeafIcon size={40} className="text-teal-700" />
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+              Medical Missionary Store
+            </h1>
+          </div>
+          <p className="text-lg text-slate-600 max-w-2xl">
+            Pure natural remedies, cold-pressed botanical oils, and historical
+            lifestyle health literature aligned with the 8 Laws of Health.
           </p>
         </header>
 
         {catalogProducts.length === 0 ? (
-          <div className="rounded-xl bg-white p-12 text-center shadow-xs">
-            <p className="text-lg text-slate-500">
+          <div className="rounded-xl bg-white p-12 text-center border border-slate-100 shadow-xs">
+            <p className="text-lg text-slate-500 font-semibold">
               No products are available in the catalogue right now.
             </p>
           </div>
         ) : (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {catalogProducts.map((product) => {
-              const isOutOfStock = product.stockQuantity <= 0;
+              const currentStock = Number(product.stockQuantity);
+              const isOutOfStock = currentStock <= 0;
 
               return (
                 <article
@@ -73,12 +79,13 @@ export default async function HomePage() {
                       </p>
                     </div>
 
-                    <div className="mt-5 border-t border-slate-50 pt-4">
-                      <div className="flex items-baseline justify-between">
+                    <div className="mt-5 border-t border-slate-100 pt-4">
+                      <div className="flex items-baseline justify-between mb-4">
                         <span className="text-xl font-black text-slate-900">
                           KSh{" "}
                           {Number(product.priceKes).toLocaleString("en-KE", {
                             minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
                           })}
                         </span>
                         <span
@@ -88,44 +95,20 @@ export default async function HomePage() {
                         >
                           {isOutOfStock
                             ? "Out of Stock"
-                            : `${product.stockQuantity} available`}
+                            : `${currentStock.toFixed(3)} kg available`}
                         </span>
                       </div>
 
-                      <div className="mt-5 border-t border-slate-50 pt-4">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xl font-black text-slate-900">
-                            KSh{" "}
-                            {Number(product.priceKes).toLocaleString("en-KE", {
-                              minimumFractionDigits: 2,
-                            })}
-                          </span>
-                          <span
-                            className={`text-xs font-bold ${
-                              isOutOfStock
-                                ? "text-rose-600"
-                                : "text-emerald-600"
-                            }`}
-                          >
-                            {isOutOfStock
-                              ? "Out of Stock"
-                              : `${product.stockQuantity} available`}
-                          </span>
-                        </div>
-
-                        <Link
-                          href={`/products/${product.slug}`}
-                          className={`mt-4 block w-full rounded-xl py-3 text-center text-sm font-semibold transition cursor-pointer ${
-                            isOutOfStock
-                              ? "bg-slate-100 text-slate-400 hover:bg-slate-100"
-                              : "bg-teal-700 text-white hover:bg-teal-800 shadow-sm"
-                          }`}
-                        >
-                          {isOutOfStock
-                            ? "Unavailable"
-                            : "View Product Details"}
-                        </Link>
-                      </div>
+                      <Link
+                        href={`/products/${product.slug}`}
+                        className={`block w-full rounded-xl py-3 text-center text-sm font-semibold transition cursor-pointer ${
+                          isOutOfStock
+                            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                            : "bg-teal-700 text-white hover:bg-teal-800 shadow-sm"
+                        }`}
+                      >
+                        {isOutOfStock ? "Unavailable" : "View Product Details"}
+                      </Link>
                     </div>
                   </div>
                 </article>

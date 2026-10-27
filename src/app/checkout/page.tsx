@@ -2,6 +2,10 @@
 
 import { useCart } from "@/context/CartContext";
 import { processSecureCheckout } from "@/actions/checkout";
+import { MissionLogo } from "@/components/icons/logo";
+import { MpesaIcon } from "@/components/icons/mpesa";
+import { StripeIcon } from "@/components/icons/stripe";
+import { CodIcon } from "@/components/icons/cod";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -10,12 +14,14 @@ export default function CheckoutPage() {
 
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     address: "",
-    gateway: "mpesa",
+    gateway: "mpesa" as "mpesa" | "stripe" | "cod",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const shippingCost = items.length > 0 ? 350 : 0;
   const finalTotal = totalAmount + shippingCost;
@@ -34,50 +40,94 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setStatusMessage("");
 
+    let standardizedPhone = formData.phone.trim();
+    if (standardizedPhone.startsWith("0")) {
+      standardizedPhone = "254" + standardizedPhone.substring(1);
+    } else if (standardizedPhone.startsWith("+")) {
+      standardizedPhone = standardizedPhone.substring(1);
+    }
+
     const result = await processSecureCheckout({
-      ...formData,
-      items: items.map(({ id, quantity }) => ({ id, quantity })),
+      name: formData.name,
+      email: formData.email,
+      phone: standardizedPhone,
+      address: formData.address,
+      gateway: formData.gateway,
+      items: items.map(({ id, quantity }) => ({
+        id,
+        quantity: Number(quantity),
+      })),
     });
 
     setIsSubmitting(false);
     setStatusMessage(result.message);
 
     if (result.success) {
+      setIsSuccess(true);
       clearCart();
     }
   };
 
-  if (items.length === 0) {
+  if (isSuccess) {
     return (
       <main className="min-h-screen bg-slate-50 p-6 md:p-12 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-3xl border border-slate-100 max-w-sm shadow-xs">
-          <p className="text-lg font-bold text-slate-900">
-            Your basket is empty
-          </p>
-          <p className="text-sm text-slate-500 mt-2">
-            Add items from the store catalogue before checking out.
+        <div className="text-center bg-white p-8 rounded-3xl border border-slate-100 max-w-md shadow-xs flex flex-col items-center">
+          <div className="rounded-full bg-teal-50 p-4 text-teal-700 mb-4">
+            <MissionLogo size={48} />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            Order Allocation Locked
+          </h2>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+            Your medical missionary order footprint has been reserved safely in
+            memory. Please complete validation steps on your handset if mobile
+            money prompts appear.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-block w-full bg-teal-700 text-white font-bold py-3 rounded-xl hover:bg-teal-800 transition"
+            className="mt-6 inline-block w-full bg-teal-700 text-white font-bold py-3.5 rounded-xl hover:bg-teal-800 transition text-center shadow-xs"
           >
-            Return to Catalogue
+            Return to Store Catalogue
           </Link>
         </div>
       </main>
     );
   }
 
+  if (items.length === 0) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-6 md:p-12 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-3xl border border-slate-100 max-w-sm shadow-xs flex flex-col items-center">
+          <p className="text-lg font-bold text-slate-900">
+            Your basket is empty
+          </p>
+          <p className="text-sm text-slate-500 mt-2">
+            Add loose herbs or natural remedy items before checking out.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block w-full bg-teal-700 text-white font-bold py-3.5 rounded-xl hover:bg-teal-800 transition text-center shadow-xs"
+          >
+            Return to Store Catalogue
+          </Link>
+        </div>
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-12">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-8">
-          Secure Checkout
-        </h1>
+        <div className="flex items-center gap-3 mb-8">
+          <MissionLogo size={36} className="text-teal-700" />
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Secure Checkout Station
+          </h1>
+        </div>
+
         {statusMessage && (
-          <p className="mb-6 rounded-xl bg-teal-50 p-4 text-sm font-semibold text-teal-800">
+          <div className="mb-6 rounded-xl bg-teal-50 p-4 text-sm font-semibold text-teal-800">
             {statusMessage}
-          </p>
+          </div>
         )}
 
         <div className="grid gap-8 md:grid-cols-3">
@@ -87,7 +137,7 @@ export default function CheckoutPage() {
           >
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-50 pb-2">
-                1. Delivery Information
+                1. Delivery and Identity Records
               </h2>
               <div className="space-y-4">
                 <div>
@@ -106,7 +156,21 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Phone Number (For M-Pesa STK)
+                    Email Address (For Ledger Receipts)
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="e.g. john@example.com"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 text-sm text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-hidden transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Mobile Number (For M-Pesa Verification)
                   </label>
                   <input
                     type="tel"
@@ -120,7 +184,7 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Shipping Address Details
+                    Fulfillment Delivery Address Waypoints
                   </label>
                   <textarea
                     name="address"
@@ -128,7 +192,7 @@ export default function CheckoutPage() {
                     rows={3}
                     value={formData.address}
                     onChange={handleInputChange}
-                    placeholder="e.g. Apartment Suite, Street name, Town or Town Area details"
+                    placeholder="e.g. Apartment Suite, Street name, Town or Parcel Office Location"
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 text-sm text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-hidden transition resize-none"
                   />
                 </div>
@@ -137,63 +201,72 @@ export default function CheckoutPage() {
 
             <div>
               <h2 className="text-lg font-bold text-slate-900 mb-4 border-b border-slate-50 pb-2">
-                2. Settlement Strategy
+                2. Automated Payment Strategy Selection
               </h2>
               <div className="grid gap-3 sm:grid-cols-3">
                 <label
-                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition cursor-pointer text-center ${formData.gateway === "mpesa" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition context-box cursor-pointer text-center ${formData.gateway === "mpesa" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
                 >
                   <input
                     type="radio"
                     name="gateway"
                     value="mpesa"
                     checked={formData.gateway === "mpesa"}
-                    onChange={handleInputChange}
+                    onChange={() =>
+                      setFormData((prev) => ({ ...prev, gateway: "mpesa" }))
+                    }
                     className="sr-only"
                   />
+                  <MpesaIcon className="text-emerald-600 mb-2" />
                   <span className="text-sm font-bold text-slate-900">
                     M-Pesa
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-1 font-medium">
+                  <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
                     STK Push Verification
                   </span>
                 </label>
 
                 <label
-                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition cursor-pointer text-center ${formData.gateway === "stripe" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition context-box cursor-pointer text-center ${formData.gateway === "stripe" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
                 >
                   <input
                     type="radio"
                     name="gateway"
                     value="stripe"
                     checked={formData.gateway === "stripe"}
-                    onChange={handleInputChange}
+                    onChange={() =>
+                      setFormData((prev) => ({ ...prev, gateway: "stripe" }))
+                    }
                     className="sr-only"
                   />
+                  <StripeIcon className="text-indigo-600 mb-2" />
                   <span className="text-sm font-bold text-slate-900">
                     Stripe
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-1 font-medium">
+                  <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
                     International Cards
                   </span>
                 </label>
 
                 <label
-                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition cursor-pointer text-center ${formData.gateway === "cod" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition context-box cursor-pointer text-center ${formData.gateway === "cod" ? "border-teal-700 bg-teal-50/30" : "border-slate-100 bg-slate-50/30 hover:border-slate-200"}`}
                 >
                   <input
                     type="radio"
                     name="gateway"
                     value="cod"
                     checked={formData.gateway === "cod"}
-                    onChange={handleInputChange}
+                    onChange={() =>
+                      setFormData((prev) => ({ ...prev, gateway: "cod" }))
+                    }
                     className="sr-only"
                   />
+                  <CodIcon className="text-slate-600 mb-2" />
                   <span className="text-sm font-bold text-slate-900">
-                    Cash on Delivery
+                    Delivery Pay
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-1 font-medium">
-                    Pay upon reception
+                  <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    Pay Upon Reception
                   </span>
                 </label>
               </div>
@@ -205,16 +278,15 @@ export default function CheckoutPage() {
               className="w-full rounded-2xl bg-teal-700 py-4 text-center text-base font-bold text-white hover:bg-teal-800 transition shadow-sm cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               {isSubmitting
-                ? "Locking down order records..."
+                ? "Locking order allocations down..."
                 : `Authorize Payment of KSh ${finalTotal.toLocaleString("en-KE", { minimumFractionDigits: 2 })}`}
             </button>
           </form>
 
-
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs">
               <h2 className="text-sm font-bold tracking-wider text-slate-400 uppercase mb-4">
-                Investment Ledger
+                Remedy Investment Ledger
               </h2>
               <div className="divide-y divide-slate-50 max-h-60 overflow-y-auto pr-1">
                 {items.map((item) => (
@@ -227,14 +299,14 @@ export default function CheckoutPage() {
                         {item.name}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        Quantity: {item.quantity} units
+                        Quantity: {item.quantity}
                       </p>
                     </div>
                     <span className="font-black text-slate-900 whitespace-nowrap">
                       KSh{" "}
-                      {(Number(item.priceKes) * item.quantity).toLocaleString(
-                        "en-KE",
-                      )}
+                      {(
+                        Number(item.priceKes) * Number(item.quantity)
+                      ).toLocaleString("en-KE", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}
