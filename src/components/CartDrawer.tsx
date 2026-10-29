@@ -25,8 +25,8 @@ export function CartDrawer() {
       <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
         <div className="w-screen max-w-md transform bg-white shadow-2xl transition duration-300 flex flex-col h-full border-l border-slate-100">
           <div className="flex items-center justify-between border-b border-slate-100 p-6">
-            <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              🛒 Shopping Basket
+            <h2 className="text-lg font-black text-slate-900 tracking-tight">
+              Shopping Cart
             </h2>
             <button
               onClick={() => setIsCartOpen(false)}
@@ -52,7 +52,7 @@ export function CartDrawer() {
             {items.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-slate-500 text-sm font-semibold">
-                  Your retail basket is completely empty.
+                  Your cart is completely empty.
                 </p>
               </div>
             ) : (
@@ -65,7 +65,7 @@ export function CartDrawer() {
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="h-16 w-16 rounded-xl object-cover bg-slate-50"
+                      className="h-16 w-16 rounded-xl object-contain bg-slate-50 border border-slate-100"
                     />
                   </picture>
 
@@ -77,7 +77,7 @@ export function CartDrawer() {
                       {item.weightGrams}g per unit
                     </p>
                     <p className="text-sm font-black text-slate-900 mt-2">
-                      KSh{" "}
+                      KSh&nbsp;
                       {Number(item.priceKes).toLocaleString("en-KE", {
                         minimumFractionDigits: 2,
                       })}
@@ -88,7 +88,7 @@ export function CartDrawer() {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity - 1)
                         }
-                        className="rounded-md border border-slate-200 h-7 w-7 flex items-center justify-center text-slate-600 hover:bg-slate-50 cursor-pointer text-sm font-bold"
+                        className="rounded-md border border-slate-200 h-7 w-7 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer text-sm font-bold transition"
                       >
                         -
                       </button>
@@ -99,7 +99,7 @@ export function CartDrawer() {
                         onClick={() =>
                           updateQuantity(item.id, item.quantity + 1)
                         }
-                        className="rounded-md border border-slate-200 h-7 w-7 flex items-center justify-center text-slate-600 hover:bg-slate-50 cursor-pointer text-sm font-bold"
+                        className="rounded-md border border-slate-200 h-7 w-7 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer text-sm font-bold transition"
                       >
                         +
                       </button>
@@ -130,27 +130,25 @@ export function CartDrawer() {
           </div>
 
           {items.length > 0 && (
-            <div className="border-t border-slate-100 bg-slate-50/50 p-6 space-y-4">
+            <div className="border-t border-slate-100 bg-slate-50 p-6 space-y-4">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm font-bold text-slate-500">
-                  Subtotal Investment
+                  Subtotal
                 </span>
                 <span className="text-2xl font-black text-slate-900">
-                  KSh{" "}
+                  KSh&nbsp;
                   {totalAmount.toLocaleString("en-KE", {
                     minimumFractionDigits: 2,
                   })}
                 </span>
               </div>
-              <button className="w-full rounded-2xl bg-teal-700 py-4 text-center text-base font-bold text-white hover:bg-teal-800 transition shadow-sm cursor-pointer">
-                <Link
-                  href="/checkout"
-                  onClick={() => setIsCartOpen(false)}
-                  className="block w-full rounded-2xl bg-teal-700 py-4 text-center text-base font-bold text-white hover:bg-teal-800 transition shadow-sm cursor-pointer"
-                >
-                  Proceed to Checkout
-                </Link>
-              </button>
+              <Link
+                href="/checkout"
+                onClick={() => setIsCartOpen(false)}
+                className="block w-full rounded-2xl bg-teal-700 py-4 text-center text-base font-bold text-white hover:bg-teal-800 transition shadow-sm"
+              >
+                Checkout
+              </Link>
             </div>
           )}
         </div>

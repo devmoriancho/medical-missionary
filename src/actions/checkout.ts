@@ -52,7 +52,7 @@ export async function processSecureCheckout(rawInput: unknown) {
 
       const productLookupMap = new Map(catalogProducts.map((p) => [p.id, p]));
 
-      let cumulativeSubtotal = 0;
+      let cumulativeSubtotalInCents = 0;
       const itemsToInsert = [];
 
       for (const inputItem of items) {
@@ -68,8 +68,9 @@ export async function processSecureCheckout(rawInput: unknown) {
           );
         }
 
-        const itemCost = Number(dbProduct.priceKes) * inputItem.quantity;
-        cumulativeSubtotal += itemCost;
+        const itemCostInCents =
+          Math.round(Number(dbProduct.priceKes) * 100) * inputItem.quantity;
+        cumulativeSubtotalInCents += itemCostInCents;
 
         itemsToInsert.push({
           productId: dbProduct.id,
@@ -98,6 +99,7 @@ export async function processSecureCheckout(rawInput: unknown) {
         }
       }
 
+      const cumulativeSubtotal = cumulativeSubtotalInCents / 100;
       const shippingCost = 350.0;
       const absoluteTotal = cumulativeSubtotal + shippingCost;
 

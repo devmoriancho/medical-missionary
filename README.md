@@ -50,6 +50,28 @@ The underlying relational schema is tracked programmatically using **Drizzle ORM
 
 ---
 
+## Current Features
+
+- Responsive landing page with hero section
+- About, Services, Products, and Contact sections
+- Database-powered product catalogue using Drizzle ORM and Neon PostgreSQL
+- Product detail pages with stock information
+- Shopping cart and checkout flow
+- Kenya-focused pricing and delivery support
+- M-Pesa and Stripe payment options prepared for integration
+- Responsive navigation with mobile menu
+- Category-based product pages
+
+## Routes
+
+- `/`
+- `/about`
+- `/services`
+- `/products`
+- `/contact`
+- `/categories/[slug]`
+- `/checkout`
+
 ### Version 1.1 Structural Schema Hardening Updates
 
 - **`orders`**: Added a mandatory `buyer_email` column snapshot to capture customer communications securely at checkout, while supporting the optional `user_id` relation branch for high-conversion Guest Checkout access.
