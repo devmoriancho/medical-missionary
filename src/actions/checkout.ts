@@ -39,6 +39,7 @@ export async function processSecureCheckout(rawInput: unknown) {
     const uniqueProductIds = items.map((item) => item.id);
 
     const orderResult = await db.transaction(async (tx) => {
+      // 1. Fetch catalog information inside the checkout transaction
       const catalogProducts = await tx
         .select({
           id: products.id,
@@ -55,6 +56,7 @@ export async function processSecureCheckout(rawInput: unknown) {
       let cumulativeSubtotalInCents = 0;
       const itemsToInsert = [];
 
+      // 2. Validate availability and deduct stock sequentially
       for (const inputItem of items) {
         const dbProduct = productLookupMap.get(inputItem.id);
 
@@ -103,6 +105,7 @@ export async function processSecureCheckout(rawInput: unknown) {
       const shippingCost = 350.0;
       const absoluteTotal = cumulativeSubtotal + shippingCost;
 
+      // 3. Create the parent order entry
       const [insertedOrder] = await tx
         .insert(orders)
         .values({
@@ -123,8 +126,10 @@ export async function processSecureCheckout(rawInput: unknown) {
         orderId: insertedOrder.id,
       }));
 
+      // 4. Attach line items to the generated order ID record
       await tx.insert(orderItems).values(itemsWithOrderId);
 
+      // 5. Log transaction audit movement records
       await tx.insert(inventoryMovements).values(
         itemsToInsert.map((item) => ({
           productId: item.productId,
@@ -135,6 +140,7 @@ export async function processSecureCheckout(rawInput: unknown) {
         })),
       );
 
+      // 6. Spawn the payment intent row ledger tracking block
       await tx.insert(payments).values({
         orderId: insertedOrder.id,
         gateway,
@@ -156,7 +162,7 @@ export async function processSecureCheckout(rawInput: unknown) {
       message: "Order placed successfully! Stock has been reserved.",
     };
   } catch (error: unknown) {
-    console.error("Checkout transaction error:", error);
+    console.error("Checkout process error:", error);
     return {
       success: false,
       message:

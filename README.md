@@ -26,6 +26,13 @@ The platform enforces a strict **Server-Isolation Architecture Pattern**. The cl
 
 The underlying relational schema is tracked programmatically using **Drizzle ORM Object Contracts** optimized for performance-tuned PostgreSQL runtime engines.
 
+### Database Migrations
+
+Apply Drizzle migrations to the Neon database before running checkout:
+
+````bash
+npx drizzle-kit migrate
+
 ### Table Architecture Matrix
 
 - **`categories`**: Stores structural taxonomy definitions for remedies, organic oils, and health literature using unique slug strings matching absolute route configurations.
@@ -35,7 +42,6 @@ The underlying relational schema is tracked programmatically using **Drizzle ORM
 - **`orderItems`**: Manages transactional history boundaries. Saves an immutable snapshot copy of `price_at_purchase` and `product_name_snapshot` to keep old corporate corporate ledger states 100% clean if product data updates later.
 - **`payments`**: **(New Isolation Table)** Monitors transaction attempts per order. Tracks the specified gateway provider, confirmation references, and preserves raw API metadata properties (`raw_payload`) for auditing.
 - **`inventory_movements`**: **(New Audit Table)** Tracks chronological inventory changes. Logs exact additions, reservation holds, sales, or returns by product ID to deliver absolute stock visibility.
-- **`product_embeddings`**: Holds specialized vector geometric multi-dimensional array parameters (`vector(1536)`) reserved for future AI engine feature releases.
 
 ---
 
@@ -86,7 +92,7 @@ Create a localized key-value asset ledger file matching this parameter grid to c
 
 ```env
 DATABASE_URL=postgres://[user]:[password]@[host]/[database]?sslmode=require
-```
+````
 
 ### Operational Commands
 

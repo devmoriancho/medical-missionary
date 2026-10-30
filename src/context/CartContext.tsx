@@ -28,24 +28,30 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-
-    const savedCart = localStorage.getItem("mm_cart");
-    if (!savedCart) return [];
-
-    try {
-      return JSON.parse(savedCart) as CartItem[];
-    } catch (error) {
-      console.error("Failed to parse saved cart:", error);
-      return [];
-    }
-  });
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [hasLoadedCart, setHasLoadedCart] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
+    queueMicrotask(() => {
+      const savedCart = localStorage.getItem("mm_cart");
+
+      if (savedCart) {
+        try {
+          setItems(JSON.parse(savedCart) as CartItem[]);
+        } catch (error) {
+          console.error("Failed to parse saved cart:", error);
+        }
+      }
+
+      setHasLoadedCart(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedCart) return;
     localStorage.setItem("mm_cart", JSON.stringify(items));
-  }, [items]);
+  }, [hasLoadedCart, items]);
 
   const addToCart = (newItem: Omit<CartItem, "quantity">) => {
     setItems((prevItems) => {

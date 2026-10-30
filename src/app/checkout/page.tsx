@@ -4,6 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { processSecureCheckout } from "@/actions/checkout";
 import Link from "next/link";
 import { useState } from "react";
+import { initiateMpesaPayment } from "@/actions/mpesa";
 
 export default function CheckoutPage() {
   const { items, totalAmount, clearCart } = useCart();
@@ -55,8 +56,21 @@ export default function CheckoutPage() {
       })),
     });
 
+    if (result.success && result.orderId && formData.gateway === "mpesa") {
+      setStatusMessage("Sending M-Pesa prompt to your phone...");
+
+      const mpesaResult = await initiateMpesaPayment(
+        result.orderId,
+        standardizedPhone,
+        result.totalAmount,
+      );
+
+      setStatusMessage(mpesaResult.message);
+    } else {
+      setStatusMessage(result.message);
+    }
+
     setIsSubmitting(false);
-    setStatusMessage(result.message);
 
     if (result.success) {
       setIsSuccess(true);
@@ -241,7 +255,11 @@ export default function CheckoutPage() {
                 </label>
               </div>
             </div>
-
+            {statusMessage && (
+              <div className="rounded-xl bg-teal-50/50 p-3.5 text-xs font-bold text-teal-800 border border-teal-100 mb-4">
+                {statusMessage}
+              </div>
+            )}
             <button
               type="submit"
               disabled={isSubmitting}

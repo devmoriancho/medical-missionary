@@ -8,6 +8,13 @@
       "when": 1793092192885,
       "tag": "0000_fresh_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793358873877,
+      "tag": "0001_add_buyer_name",
+      "breakpoints": true
     }
   ]
 }
